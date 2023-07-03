@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icon/amazon_icon.png</file>
+        <file>icon/folder_icon.png</file>
+        <file>icon/search_icon.png</file>
+    </qresource>
+</RCC>
