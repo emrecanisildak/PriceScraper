@@ -6,6 +6,8 @@
 
 
 std::string AmazonScraper::mLastResponse = "";
+std::string AmazonScraper::mRankResponse = "";
+
 
 // Callback fonksiyonu, CURL'ün verileri almasını ve depolamasını sağlar
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* output) {
@@ -19,6 +21,7 @@ ProductInfo AmazonScraper::scrapeProduct(const std::string &barcode)
 {
     std::string url = "https://www.amazon.com.tr/s?k=" + barcode;
     mLastResponse = "";
+    mRankResponse = "";
 
     CURL* curl = curl_easy_init();
 
@@ -38,12 +41,16 @@ ProductInfo AmazonScraper::scrapeProduct(const std::string &barcode)
 
         curl_easy_cleanup(curl);
     }
+
     ProductInfo info;
-    info.id      = QString::fromStdString(barcode);
+    info.id      =  QString::fromStdString(barcode);
     info.price   =  QString::fromStdString( price()).replace(".","").replace(",",".");
     info.rating  =  QString::fromStdString( rating());
     info.reviews =  QString::fromStdString( reviews());
     info.title   =  QString::fromStdString( title());
+    info.url     =  QString::fromStdString( AmazonScraper::url());
+    info.rank    =  QString::fromStdString( rank());
+
     return info;
 }
 
@@ -101,6 +108,58 @@ std::string AmazonScraper::reviews()
 
     if (start != std::string::npos && end != std::string::npos) {
         return mLastResponse.substr(start + nameStartTag.length(), end - start - nameStartTag.length());
+    }
+
+    return "NaN";
+}
+
+std::string AmazonScraper::url()
+{
+    std::string nameStartTag = "<a class=\"a-link-normal s-no-outline\" href=";
+    std::string nameEndTag = "keywords";
+    std::size_t start = mLastResponse.find(nameStartTag);
+    std::size_t end = mLastResponse.find(nameEndTag, start + nameStartTag.length());
+
+    if (start != std::string::npos && end != std::string::npos) {
+        QString url = QString::fromStdString(mLastResponse.substr(start + nameStartTag.length(), end - start - nameStartTag.length()));
+        url.replace("\"","");
+        static std::string amazonUrl = "https://www.amazon.com.tr";
+        return amazonUrl + url.toStdString();
+    }
+
+    return "NaN";
+}
+
+std::string AmazonScraper::rank()
+{
+    CURL* curl = curl_easy_init();
+
+    if (curl) {
+        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,false);
+        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST ,false);
+        curl_easy_setopt(curl, CURLOPT_URL, url().c_str());
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &mRankResponse);
+
+        CURLcode res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK) {
+            std::cerr << "CURL error: " << curl_easy_strerror(res) << std::endl;
+        }
+
+        std::string nameStartTag = "kategoride";
+        std::string nameEndTag = ".";
+        std::size_t start = mRankResponse.find(nameStartTag);
+        std::size_t end = mRankResponse.find(nameEndTag, start + nameStartTag.length());
+
+        if (start != std::string::npos && end != std::string::npos) {
+            return mRankResponse.substr(start + nameStartTag.length(), end - start - nameStartTag.length());
+        }
+
+
+
+        curl_easy_cleanup(curl);
     }
 
     return "NaN";

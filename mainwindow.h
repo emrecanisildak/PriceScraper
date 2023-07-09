@@ -22,6 +22,10 @@ public:
     ~MainWindow();
 
 
+    // QWidget interface
+protected:
+    void closeEvent(QCloseEvent *event);
+
 private slots:
     void onAnalyzeFinished(const std::vector<RefinedData>& refinedData);
 private:
@@ -37,5 +41,6 @@ private:
 
 
     void setDarkTheme();
+
 };
 #endif // MAINWINDOW_H

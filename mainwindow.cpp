@@ -98,9 +98,14 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    //workerThread.quit();
-    //workerThread.wait();
+
     delete ui;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    workerThread.quit();
+    workerThread.wait();
 }
 
 void MainWindow::onAnalyzeFinished(const std::vector<RefinedData> &refinedData)

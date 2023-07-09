@@ -134,7 +134,6 @@ bool DataBuilder::refineData(const ProductInfo &amazonInfo, const QString &cost)
 
 
     RefinedData data;
-    data.rank              = 1;  // TODO
 
     data.info              = amazonInfo;
     data.list_price        = cost.toDouble();
@@ -143,6 +142,17 @@ bool DataBuilder::refineData(const ProductInfo &amazonInfo, const QString &cost)
     data.amazon_commission = amazonInfo.price.toDouble() * (mAnalyzeParameter.amazon_share* 0.01);
     data.total_cost        = data.transfer_cost  + data.net_price  + data.amazon_commission;
     data.profit            = amazonInfo.price.toDouble()  - data.total_cost;
+
+    if(amazonInfo.rank == "NaN")
+        data.rank  = -1;
+    else
+    {
+        QString r = amazonInfo.rank;
+        data.rank = r.replace(",","").toInt();
+    }
+
+
+
 
     if(data.net_price == 0.0)
         data.profitRate  = -1.0;
