@@ -28,6 +28,7 @@ SOURCES += \
     exportcontroller.cpp \
     main.cpp \
     mainwindow.cpp \
+    progresswidget.cpp \
     refineddata.cpp \
     xmlreader.cpp
 
@@ -41,12 +42,14 @@ HEADERS += \
     exportcontroller.h \
     mainwindow.h \
     productinfo.h \
+    progresswidget.h \
     refineddata.h \
     xmlreader.h
 
 FORMS += \
     analyzelauncherwidget.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    progresswidget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

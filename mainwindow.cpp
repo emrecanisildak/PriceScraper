@@ -10,6 +10,7 @@
 #include "exportcontroller.h"
 #include <databuilder.h>
 #include <QMessageBox>
+#include "progresswidget.h"
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -38,12 +39,35 @@ MainWindow::MainWindow(QWidget *parent)
 
     mDataBuilder          = new DataBuilder;
     mAnalyzLauncherWidget = new AnalyzeLauncherWidget;
+    mProgressBarWidget    = new ProgressWidget;
+
+
+    connect(mProgressBarWidget, &ProgressWidget::finishAnalyzRequest,
+            mDataBuilder, &DataBuilder::onFinishRequest);
+
+    connect(mDataBuilder, &DataBuilder::logOccured,
+            mProgressBarWidget, &ProgressWidget::onLogOccured);
+
+    connect(mDataBuilder, &DataBuilder::goingStatics,
+            mProgressBarWidget, &ProgressWidget::onLogStatitics);
 
     connect(mDataBuilder,&DataBuilder::analyzeFinished,
             this, &MainWindow::onAnalyzeFinished);
 
     connect(mAnalyzLauncherWidget,&AnalyzeLauncherWidget::startAnalyze,
             mDataBuilder,        &DataBuilder::onStartAnalyzeRequest);
+
+    connect(ui->actionAnaliz_Ekran,&QAction::triggered,
+            this,[this](){
+                mProgressBarWidget->show();
+            });
+
+
+
+    connect(mAnalyzLauncherWidget,&AnalyzeLauncherWidget::startAnalyze,
+            [this](const QString& filePath, const AnalyzeParameter& parameter){
+                mProgressBarWidget->show();
+            });
 
     connect(ui->actionYeni,&QAction::triggered,this,[this](bool isTriggered)
     {
@@ -73,7 +97,7 @@ MainWindow::MainWindow(QWidget *parent)
                 dialog.exec();
             });
 
-    ui->tableView->setSelectionMode(QAbstractItemView::ContiguousSelection);
+     ui->tableView->setSelectionMode(QAbstractItemView::ContiguousSelection);
      ui->tableView->setModel(&mModel);
 
      ui->tableView->setColumnWidth(0,150);
@@ -106,12 +130,15 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     workerThread.quit();
     workerThread.wait();
+    delete mProgressBarWidget;
 }
 
 void MainWindow::onAnalyzeFinished(const std::vector<RefinedData> &refinedData)
 {
     mLastData = refinedData;
     mModel.giveModelData(refinedData);
+    mProgressBarWidget->onFinished();
+    mProgressBarWidget->hide();
 }
 
 void MainWindow::setDarkTheme()

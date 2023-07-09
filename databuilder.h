@@ -26,6 +26,8 @@ public:
 
 signals:
     void analyzeFinished(const std::vector<RefinedData>& refinedData);
+    void goingStatics(int total, int current);
+    void logOccured(const QString& log);
 
 public slots:
     void onStartAnalyzeRequest(const QString& filePath, const AnalyzeParameter& parameter);
@@ -35,6 +37,7 @@ public slots:
 private:
     int                  mCounter;
     int                  mInvalidOperation;
+    int                  mTotalSize;
     std::vector<QString> mUnanalyzableList;
 
 

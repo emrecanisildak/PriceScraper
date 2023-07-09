@@ -35,7 +35,8 @@ void DataBuilder::onAnalyzeProcess()
     // Analyze..
     if(mStatus == AnalzeStatus::IDLE)
     {
-        qDebug()<<"Analiz bitiriliyor kullanici durdurma istegi geldi..";
+        emit logOccured("Analiz bitiriliyor.");
+        //qDebug()<<"Analiz bitiriliyor kullanici durdurma istegi geldi..";
         emit analyzeFinished(mRefinedData);
         mTimer->stop();
     }
@@ -44,7 +45,9 @@ void DataBuilder::onAnalyzeProcess()
         // Eğer liste boş ve kalmadıysa elemant
         if(mProductIdList.empty())
         {
-            qDebug()<<"Ürün listesi bitti analiz bitiriliyor..";
+            emit logOccured("Ürün listesinin hepsi analiz edildi. Analiz bitti.");
+
+           // qDebug()<<"Ürün listesi bitti analiz bitiriliyor..";
 
             mStatus = AnalzeStatus::IDLE;
             mTimer->stop();
@@ -69,7 +72,7 @@ void DataBuilder::onAnalyzeProcess()
             if(isOk)
             {
                 productInfo.print();
-               mProductIdList.erase(mProductIdList.begin());
+                mProductIdList.erase(mProductIdList.begin());
                ++mCounter;
             }
             else
@@ -86,6 +89,8 @@ void DataBuilder::onAnalyzeProcess()
                     mUnanalyzableList.push_back(barcode);
                 }
             }
+
+            emit goingStatics(mTotalSize,mCounter);
         }
 
     }
@@ -95,7 +100,7 @@ void DataBuilder::onAnalyzeProcess()
 
 void DataBuilder::onStartAnalyzeRequest(const QString &filePath, const AnalyzeParameter &parameter)
 {
-    qDebug()<<"Start analyze request"<<filePath;
+    //qDebug()<<"Start analyze request"<<filePath;
     mRefinedData.clear();
     mProductIdList.clear();
     mPriceList.clear();
@@ -108,12 +113,25 @@ void DataBuilder::onStartAnalyzeRequest(const QString &filePath, const AnalyzePa
     mPriceList         = mExcellReader.readAllColumnn(tStockPriceColumn);
 
 
-    qDebug()<<"Toplam liste boyutu: "<<mProductIdList.size();
+    static QString logTotalProduct= "";
+    mTotalSize = mProductIdList.size();
+    logTotalProduct = QString("Toplam analiz edilecek kitap sayısı: %1").arg(mProductIdList.size());
+    emit logOccured(logTotalProduct);
+
+
+    static QString logAllProduct= "";
+    logAllProduct = "Analiz edilecek kitap barkod listesi";
+    emit logOccured(logAllProduct);
+
+    logAllProduct.clear();
 
     for(const auto& barcode : mProductIdList)
     {
-        qDebug()<<barcode <<" analiz edilecek.";
+        //qDebug()<<barcode <<" analiz edilecek.";
+        logAllProduct += "*   " + barcode + "\n";
     }
+
+        emit logOccured(logAllProduct);
 
     mTimeInfo.reset();
     mTimeInfo.totalProcess = static_cast<int>(mProductIdList.size());
@@ -128,9 +146,16 @@ void DataBuilder::onStartAnalyzeRequest(const QString &filePath, const AnalyzePa
 
 bool DataBuilder::refineData(const ProductInfo &amazonInfo, const QString &cost)
 {
-    qDebug()<<"Discount : "<<mAnalyzeParameter.discount;
-    qDebug()<<"transportation_cost : "<<mAnalyzeParameter.transportation_cost;
-    qDebug()<<"amazon_share : "<<mAnalyzeParameter.amazon_share;
+    static QString log;
+    log = "--> ";
+    log += amazonInfo.id;
+    log += " analiz ediliyor.";
+
+    emit logOccured(log);
+
+   // qDebug()<<"Discount : "<<mAnalyzeParameter.discount;
+   // qDebug()<<"transportation_cost : "<<mAnalyzeParameter.transportation_cost;
+   // qDebug()<<"amazon_share : "<<mAnalyzeParameter.amazon_share;
 
 
     RefinedData data;

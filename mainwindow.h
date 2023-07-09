@@ -5,6 +5,8 @@
 #include "analyzviewmodel.h"
 #include <QThread>
 
+
+class ProgressWidget;
 class DataBuilder;
 
 QT_BEGIN_NAMESPACE
@@ -33,6 +35,7 @@ private:
 
     std::vector<RefinedData> mLastData;
 
+    ProgressWidget* mProgressBarWidget;
 
     AnalyzeLauncherWidget* mAnalyzLauncherWidget;
     DataBuilder* mDataBuilder;

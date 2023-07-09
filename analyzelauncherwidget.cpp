@@ -6,8 +6,6 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-
-
 AnalyzeLauncherWidget::AnalyzeLauncherWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::AnalyzeLauncherWidget)
